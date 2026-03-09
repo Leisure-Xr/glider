@@ -1,0 +1,296 @@
+##########################################
+#    __    _     _   ___   ____  ___
+#   / /`_ | |   | | | | \ | |_  | |_)
+#   \_\_/ |_|__ |_| |_|_/ |_|__ |_| \
+#
+# Glider 是一个支持多协议的转发代理，同时也是具备 ipset 管理功能的 DNS 转发服务器（类似 dnsmasq）。
+#
+# 我们可以将本地监听器设置为代理服务器，并通过转发器将请求转发到互联网。
+#
+#                |转发器 ----------------->|
+#   监听器 --> |                            | 互联网
+#                |转发器 --> 转发器->...|
+#
+# -----------------------------------------------------------
+#
+# 这是 glider 的示例配置文件。
+#
+# 格式为每行一个选项，合法选项与命令行参数相同。
+# 详见 "glider -help"。
+#
+# 注释行以 "#" 开头，值的格式为：
+# KEY=VALUE
+#
+# -----------------------------------------------------------
+
+# 详细模式，打印日志
+verbose=True
+
+# 监听器
+# ---------
+# 本地监听器，可以在不同端口以不同协议设置多个监听器。
+
+# 监听 8443，同端口同时支持 http/socks5 代理。
+# listen=:8443
+listen=127.0.0.1:8443
+
+# 监听 8448 作为 SS 服务器。
+# listen=ss://AEAD_CHACHA20_POLY1305:pass@:8448
+
+# 监听 8080 作为 HTTP 代理服务器。
+# listen=http://:8080
+
+# 监听 1080 作为 SOCKS5 代理服务器。
+# listen=socks5://:1080
+
+# 监听 1234 作为 VLESS 代理服务器。
+# listen=vless://uuid@:1234
+# 监听 1234 作为 VLESS 代理服务器，客户端认证失败时回落到 127.0.0.1:8080 HTTP 服务器。
+# listen=vless://uuid@:1234?fallback=127.0.0.1:8080
+
+# 监听 1081 作为 Linux 透明代理服务器。
+# listen=redir://:1081
+
+# 监听 1082 作为 Linux 透明代理服务器（tproxy）。
+# listen=tproxy://:1082
+
+# HTTP over TLS（HTTPS 代理）
+# listen=tls://:443?cert=crtFilePath&key=keyFilePath,http://
+
+# SS over TLS
+# listen=tls://:443?cert=crtFilePath&key=keyFilePath,ss://AEAD_CHACHA20_POLY1305:pass@
+
+# SOCKS5 over Unix 域套接字
+# listen=unix:///dev/shm/socket,socks5://
+
+# SOCKS5 over VM Socket
+# listen=vsock://:1234,socks5://
+
+# SOCKS5 over KCP
+# listen=kcp://aes:key@127.0.0.1:8444?dataShards=10&parityShards=3&mode=fast,socks5://
+
+# VLESS 服务器
+# listen=vless://UUID@:1234
+
+# VLESS over TLS 服务器
+# listen=tls://:1234?cert=/path/to/cert&key=/path/to/key,vless://UUID@?fallback=127.0.0.1:80
+
+# VLESS over WS
+# listen=ws://:1234/path?host=domain.com,vless://707f20ea-d4b8-4d1d-8e2e-2c86cb2ed97a@?fallback=127.0.0.1:80
+
+# Trojan 服务器
+# listen=trojan://PASSWORD@:1234?cert=/path/to/cert&key=/path/to/key&fallback=127.0.0.1
+
+# Trojanc 服务器（不含 TLS 的 Trojan）
+# listen=trojanc://PASSWORD@:1234?fallback=127.0.0.1
+
+# 转发器
+# ----------
+# 转发器，可以设置多个转发器。
+# forward=SCHEME#OPTIONS
+
+# 转发器选项
+# priority：设置该转发器的优先级，默认：0
+# interface：设置连接远程服务器时使用的本地接口或 IP 地址
+
+# SOCKS5 代理作为转发器
+# forward=socks5://192.168.1.10:1080
+
+# SOCKS5 代理作为转发器，优先级 100
+# forward=socks5://192.168.1.10:1080#priority=100
+
+# SOCKS5 代理作为转发器，优先级 100，使用 `eth0` 作为出口接口
+# forward=socks5://192.168.1.10:1080#priority=100&interface=eth0
+
+# SOCKS5 代理作为转发器，优先级 100，使用 `192.168.1.100` 作为出口 IP
+# forward=socks5://192.168.1.10:1080#priority=100&interface=192.168.1.100
+
+# SS 代理作为转发器
+# forward=ss://method:pass@1.1.1.1:8443
+
+# SSR 代理作为转发器
+# forward=ssr://method:pass@1.1.1.1:8443?protocol=auth_aes128_md5&protocol_param=xxx&obfs=tls1.2_ticket_auth&obfs_param=yyy
+
+# SSH 转发器
+# forward=ssh://user[:pass]@host:port[?key=keypath&timeout=SECONDS]
+# forward=ssh://root:pass@host:port
+# forward=ssh://root@host:port?key=/path/to/keyfile
+# forward=ssh://root@host:port?key=/path/to/keyfile&timeout=5
+
+# HTTP 代理作为转发器
+# forward=http://1.1.1.1:8080
+
+# Trojan 作为转发器
+# forward=trojan://PASSWORD@1.1.1.1:8080[?serverName=SERVERNAME][&skipVerify=true]
+
+# Trojanc 作为转发器
+# forward=trojanc://PASSWORD@1.1.1.1:8080
+
+# VLESS 转发器
+# forward=vless://5a146038-0b56-4e95-b1dc-5c6f5a32cd98@1.1.1.1:443
+
+# VMess（AEAD 认证）
+# forward=vmess://5a146038-0b56-4e95-b1dc-5c6f5a32cd98@1.1.1.1:443
+
+# VMess（MD5 认证，通过设置 alterID）
+# forward=vmess://5a146038-0b56-4e95-b1dc-5c6f5a32cd98@1.1.1.1:443?alterID=2
+
+# VMess over TLS
+# forward=tls://server.com:443,vmess://5a146038-0b56-4e95-b1dc-5c6f5a32cd98
+
+# VMess over WebSocket
+# forward=ws://1.1.1.1:80/path?host=server.com,vmess://chacha20-poly1305:5a146038-0b56-4e95-b1dc-5c6f5a32cd98@
+
+# VMess over WS over TLS
+# forward=tls://server.com:443,ws://,vmess://5a146038-0b56-4e95-b1dc-5c6f5a32cd98
+# forward=tls://server.com:443,ws://@/path,vmess://5a146038-0b56-4e95-b1dc-5c6f5a32cd98
+
+# SS over TLS
+# forward=tls://server.com:443,ss://AEAD_CHACHA20_POLY1305:pass@
+
+# SS over KCP
+# forward=kcp://aes:key@127.0.0.1:8444?dataShards=10&parityShards=3&mode=fast,ss://AEAD_CHACHA20_POLY1305:pass@
+
+# SS with Simple-Obfs
+# forward=simple-obfs://1.1.1.1:443?type=tls&host=apple.com,ss://AEAD_CHACHA20_POLY1305:pass@
+
+# SOCKS5 over Unix 域套接字
+# forward=unix:///dev/shm/socket,socks5://
+
+# 代理链
+# ---------------
+# 可以使用 1 个 forward 选项设置代理链，
+# 使用逗号分隔不同的上游代理。
+#forward=http://1.1.1.1:8080,socks5://2.2.2.2:1080
+
+
+# 转发策略
+# -----------------
+# 如果设置了多个转发器，可以使用以下策略。
+
+# 轮询模式：rr
+# 高可用模式：ha
+# 基于延迟的高可用模式：lha
+# 目标哈希模式：dh
+strategy=rr
+
+# 转发器设置
+# ------------------
+# 可以为转发器设置一些参数。
+
+# 拨号和中继失败次数达到该值后，转发器将被设置为禁用状态。
+maxfailures=3
+
+# 建立连接的超时时间（秒）
+# dialtimeout=3
+
+# 代理服务器与客户端之间中继数据的超时时间（秒）
+# 不了解影响请勿修改。
+# relaytimeout=0
+
+
+# 转发器健康检查
+# ----------------
+# 可以检查转发器是否可用。
+
+# 转发器健康检查：
+# check=tcp[://HOST:PORT]: TCP 端口连接检测
+# check=http://HOST[:PORT][/URI][#expect=REGEX_MATCH_IN_RESP_LINE]
+# check=https://HOST[:PORT][/URI][#expect=REGEX_MATCH_IN_RESP_LINE]
+# 示例：check=https://www.netflix.com/title/81215567#expect=301|404
+# check=file://SCRIPT_PATH: 运行检测脚本，退出码为 0 表示健康，环境变量：FORWARDER_ADDR,FORWARDER_URL
+# check=disable: 禁用健康检查
+check=http://www.msftconnecttest.com/connecttest.txt#expect=200
+
+# 检查间隔（秒）
+checkinterval=30
+
+# 将转发器设为禁用的超时时间（秒）
+checktimeout=10
+
+# 仅在 新延迟 < 旧延迟 - 容忍值 时切换转发器，用于 lha 模式
+checktolerance=100
+
+# 使用最近 N 次检查的平均延迟
+checklatencysamples=10
+
+# 仅检查已禁用的转发器
+checkdisabledonly=false
+
+# DNS 转发服务器
+# ----------------
+# 可以在规则文件中为不同目标指定不同的上游 DNS 服务器。
+
+# 设置 DNS 转发服务器
+# dns=:53
+
+# 全局上游 DNS 服务器（可在规则文件中指定不同的 DNS 服务器）
+dnsserver=8.8.8.8:53
+dnsserver=1.1.1.1:53
+
+# 默认情况下，当 glider 收到 UDP DNS 请求且没有指定转发器时，
+# 将使用 UDP 查询上游 DNS 服务器；否则使用 TCP。
+# 可设置 dnsalwaystcp=true 始终使用 TCP，无论是否有转发器。
+# dnsalwaystcp=false
+
+# 多 DNS 服务器切换超时（秒）
+dnstimeout=3
+
+# DNS 缓存最大 TTL（秒）
+dnsmaxttl=1800
+
+# DNS 缓存最小 TTL（秒）
+dnsminttl=0
+
+# DNS 缓存大小
+dnscachesize=4096
+
+# 显示 DNS 缓存查询日志
+dnscachelog=True
+
+# 禁用 AAAA 查询（IPv6 DNS）
+# dnsnoaaaa=True
+
+# 自定义 DNS 记录
+dnsrecord=www.example.com/1.2.3.4
+dnsrecord=www.example.com/2606:2800:220:1:248:1893:25c8:1946
+
+# 服务
+# service=dhcpd,网卡,起始IP,结束IP,租约分钟数[,MAC=IP,MAC=IP...]
+# service=dhcpd-failover,网卡,起始IP,结束IP,租约分钟数[,MAC=IP,MAC=IP...]
+# 示例：
+# service=dhcpd,eth1,192.168.1.100,192.168.1.199,720
+# service=dhcpd,eth2,192.168.2.100,192.168.2.199,720,fc:23:34:9e:25:01=192.168.2.101,fc:23:34:9e:25:02=192.168.2.102
+
+# 接口设置
+# ------------------
+# 指定全局出口 IP/接口。
+#
+# interface=""
+# interface="192.168.1.100"
+# interface="eth0"
+#
+# 为某个转发器指定接口：
+# forward=socks5://192.168.1.10:1080#priority=100&interface=eth0
+# forward=socks5://192.168.1.10:1080#priority=100&interface=192.168.1.100
+
+# 规则文件
+# ----------
+# 指定额外的转发规则。
+#
+# 指定规则文件目录，该目录下所有 *.rule 文件都将作为规则文件解析
+# rules-dir=rules.d
+#
+# 指定单个规则文件
+#rulefile=office.rule
+#rulefile=home.rule
+
+# 包含配置文件
+# ----------
+#include=dnsrecord.inc.conf
+#include=more.conf
+
+# 环境变量
+# ----------
+# 在 VALUE 中使用 {$ENV_VAR_NAME} 获取环境变量值。
+# forward=socks5://{$USER_NAME}:{$USER_PASS}@:1080
