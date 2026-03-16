@@ -36,6 +36,7 @@ config/rules.d/*.rule
 config/rules.d/*.list
 
 glider
+glider-*
 /bak/
 /rules.d/
 /.claude/settings.local.json
